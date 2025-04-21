@@ -35,11 +35,8 @@ window.addEventListener('load', () => {
     { x: 600, y: canvas.height - groundHeight - 60, width: 100, height: 10 }
   ];
 
-  // Löcher im Boden (x, Breite)
-  const holes = [
-    { x: 250, width: 50 },
-    { x: 500, width: 50 }
-  ];
+  // Löcher direkt unter den Plattformen
+  const holes = platforms.map(p => ({ x: p.x, width: p.width }));
 
   // Tastenzustände
   const keys = {};
@@ -57,7 +54,6 @@ window.addEventListener('load', () => {
   });
 
   function resetGame() {
-    // Reset Spieler und Hintergrund
     player.x = startX;
     player.y = startY;
     player.dy = 0;
@@ -75,7 +71,7 @@ window.addEventListener('load', () => {
     // Begrenzung links
     if (player.x < 0) player.x = 0;
 
-    // Rechts raus → Level fortschritt
+    // Bildschirm rechts verlassen: Hintergrundwechsel
     if (player.x + player.width > canvas.width) {
       currentBackground = (currentBackground + 1) % backgrounds.length;
       player.x = 0;
@@ -88,11 +84,11 @@ window.addEventListener('load', () => {
     // Plattform-Kollision
     let collided = false;
     platforms.forEach(plat => {
-      if (player.dy >= 0 // nur beim Fallen
-          && player.x + player.width > plat.x
-          && player.x < plat.x + plat.width
-          && player.y + player.height >= plat.y
-          && player.y + player.height - player.dy < plat.y) {
+      if (player.dy >= 0 && 
+          player.x + player.width > plat.x && 
+          player.x < plat.x + plat.width &&
+          player.y + player.height >= plat.y && 
+          player.y + player.height - player.dy < plat.y) {
         player.y = plat.y - player.height;
         player.dy = 0;
         player.onGround = true;
@@ -101,9 +97,8 @@ window.addEventListener('load', () => {
     });
     if (!collided) player.onGround = false;
 
-    // Boden-Kollision (ohne Löcher)
+    // Boden-Kollision (außer über Löchern)
     const groundY = canvas.height - groundHeight - player.height;
-    // Prüfen, ob Spieler über einem Loch ist
     const overHole = holes.some(h => 
       player.x + player.width > h.x && player.x < h.x + h.width
     );
@@ -122,7 +117,8 @@ window.addEventListener('load', () => {
     // Hintergrund
     ctx.fillStyle = backgrounds[currentBackground];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // Boden (mit Löchern)
+
+    // Boden mit Löchern
     ctx.fillStyle = "#444";
     let lastX = 0;
     holes.forEach(h => {
