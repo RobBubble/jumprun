@@ -8,14 +8,12 @@ body {
   align-items: center;
   justify-content: flex-start;
   height: 100vh;
-  position: relative;
 }
 
 /* Cover (800×400) */
 #cover {
   width: 800px;
   height: 400px;
-  display: block;
   margin-top: 16px;
   image-rendering: pixelated;
 }
@@ -23,13 +21,14 @@ body {
 /* Spielbereich: Canvas und Legende nebeneinander */
 #playArea {
   display: flex;
+  flex-direction: row;
   gap: 24px;
   align-items: flex-start;
   margin-top: 8px;
 }
 
-/* Container um Canvas und Overlay */
-#canvasContainer {
+/* Wrapper für Canvas + Overlay */
+#canvasWrapper {
   position: relative;
   width: 800px;
   height: 400px;
@@ -41,17 +40,17 @@ body {
   transition: filter 0.3s ease;
 }
 
-/* Canvas-Rahmen und Pixel-Art */
+/* Canvas-Styling */
 #gameCanvas {
+  display: block;
   border: 2px solid white;
   image-rendering: pixelated;
-  display: block;
 }
 
-/* Overlay zentriert über dem Canvas */
+/* Overlay zentriert über Canvas */
 #startOverlay {
   position: absolute;
-  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -64,7 +63,7 @@ body {
   z-index: 10;
 }
 
-/* Checkbox-Hack: bei Klick Blur entfernen und Overlay ausblenden */
+/* Checkbox-Hack: Overlay ausblenden & Blur entfernen */
 #startToggle:checked ~ #gameCanvas {
   filter: none;
 }
@@ -72,7 +71,14 @@ body {
   display: none;
 }
 
-/* Legende neben dem Canvas */
+/* Legende-Wrapper */
+#legendWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Legenden-Bild */
 #legend {
   width: 200px;
   height: auto;
