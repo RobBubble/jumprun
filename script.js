@@ -5,6 +5,13 @@ window.addEventListener('load', () => {
   // Pixel-Art scharf halten
 ctx.imageSmoothingEnabled = false;
 
+  const backgroundImages = [];
+for (let i = 0; i < 3; i++) {
+  const img = new Image();
+  img.src = `sprites/bg${i}.png`;
+  backgroundImages.push(img);
+}
+
   // Gegner‑Sprite laden
 const enemyImage = new Image();
 enemyImage.src = 'sprites/enemy_sprite_48.png';
@@ -307,9 +314,11 @@ collectibleImage.src = 'sprites/Brot_24.png';
       return true;
     });
 
-    // Zeichnen
-    ctx.fillStyle = backgrounds[currentBackground];
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+// statt Farb‑Fill:
+const bg = backgroundImages[currentBackground];
+if (bg.complete) {
+  ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+}
 
     // Boden mit Löchern zeichnen
     ctx.fillStyle = '#444';
