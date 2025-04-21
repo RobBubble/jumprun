@@ -346,15 +346,18 @@ if (playerImage.complete) {
 projectiles.forEach(proj => {
   if (projectileImage.complete) {
     // proj.x/proj.y sind aktuell Mittelpunkte – daher um 5px verschieben
+  projectiles.forEach(proj => {
+  if (projectileImage.complete) {
     ctx.drawImage(
       projectileImage,
-      proj.x - 15, 
-      proj.y - 15,
-      10,    // Breite = 2*radius
-      10     // Höhe = 2*radius
+      proj.x - proj.radius,
+      proj.y - proj.radius,
+      proj.radius * 2,
+      proj.radius * 2
     );
   }
 });
+  
 
   // Gegner mit Sprite zeichnen (statt grüner Würfel)
 enemies.forEach(e => {
