@@ -26,29 +26,43 @@ window.addEventListener('load', () => {
     onGround: true
   };
 
-  // Arrays für Plattformen und Löcher
   let platforms = [];
   let holes = [];
 
-  // Generiert ein neues Level mit zufälligen Plattformen und Löchern
   function generateLevel() {
     platforms = [];
     holes = [];
     const groundY = canvas.height - groundHeight - player.height;
     const count = Math.floor(Math.random() * 3) + 2; // 2 bis 4 Plattformen
+    // Berechne maximale Sprungweite und -höhe
+    const maxFrames = Math.abs(player.jumpPower) / gravity * 2;
+    const maxDist = player.speed * maxFrames;
+    const minGap = 50;
+    const maxGap = maxDist * 0.8; // 80% der maximalen Distanz
+    const maxJumpHeight = (player.jumpPower * player.jumpPower) / (2 * gravity);
+    const minHeightOffset = 20;
+    const maxHeightOffset = maxJumpHeight * 0.8; // 80% der max Höhe
+
+    let lastX = startX + player.width + 20; // Freiraum nach Start
 
     for (let i = 0; i < count; i++) {
       const width = 80 + Math.random() * 40; // 80 bis 120px breit
-      const x = Math.random() * (canvas.width - width);
-      // Höhe so wählen, dass sie mit dem Sprung erreichbar ist (Diff 50-130px)
-      const y = groundY - (50 + Math.random() * 80);
-
+      const gap = minGap + Math.random() * (maxGap - minGap);
+      let x = lastX + gap;
+      if (x + width > canvas.width - 10) {
+        x = canvas.width - 10 - width;
+      }
+      const verticalOffset = minHeightOffset + Math.random() * (maxHeightOffset - minHeightOffset);
+      const y = groundY - verticalOffset;
       platforms.push({ x, y, width, height: 10 });
       holes.push({ x, width });
+      lastX = x + width;
     }
   }
 
-  // Tastenzustände
+  // Initiales Level
+  generateLevel();
+
   const keys = {};
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
@@ -61,7 +75,6 @@ window.addEventListener('load', () => {
     keys[e.code] = false;
   });
 
-  // Spiel zurücksetzen (z.B. beim Fall ins Loch)
   function resetGame() {
     player.x = startX;
     player.y = startY;
@@ -72,32 +85,27 @@ window.addEventListener('load', () => {
     generateLevel();
   }
 
-  // Initiales Level generieren
-  generateLevel();
-
   function gameLoop() {
-    // Horizontalbewegung
+    // Horizontal
     player.dx = 0;
     if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -player.speed;
     if (keys['ArrowRight'] || keys['KeyD']) player.dx = player.speed;
     player.x += player.dx;
 
-    // Bildschirmbegrenzung links
     if (player.x < 0) player.x = 0;
-    // Bildschirm rechts verlassen → neuer Hintergrund und Level
     if (player.x + player.width > canvas.width) {
       currentBackground = (currentBackground + 1) % backgrounds.length;
       player.x = 0;
       generateLevel();
     }
 
-    // Schwerkraft anwenden
+    // Fall
     player.dy += gravity;
     const oldY = player.y;
     player.y += player.dy;
     player.onGround = false;
 
-    // Plattform-Kollision (nur beim Fallen)
+    // Plattform-Kollision
     if (player.dy > 0) {
       for (const p of platforms) {
         if (
@@ -114,18 +122,16 @@ window.addEventListener('load', () => {
       }
     }
 
-    // Boden-Kollision (außer über Löchern)
+    // Boden-Kollision
     const groundY = canvas.height - groundHeight - player.height;
-    const overHole = holes.some(h =>
-      player.x + player.width > h.x && player.x < h.x + h.width
-    );
+    const overHole = holes.some(h => player.x + player.width > h.x && player.x < h.x + h.width);
     if (!overHole && player.y + player.height >= canvas.height - groundHeight) {
       player.y = groundY;
       player.dy = 0;
       player.onGround = true;
     }
 
-    // Fallen in ein Loch
+    // Fallen ins Loch
     if (player.y > canvas.height) {
       resetGame();
     }
@@ -137,18 +143,18 @@ window.addEventListener('load', () => {
 
     // Boden mit Löchern
     ctx.fillStyle = '#444';
-    let lastX = 0;
-    for (const h of holes) {
-      ctx.fillRect(lastX, canvas.height - groundHeight, h.x - lastX, groundHeight);
-      lastX = h.x + h.width;
-    }
-    ctx.fillRect(lastX, canvas.height - groundHeight, canvas.width - lastX, groundHeight);
+    let lastXdraw = 0;
+    holes.forEach(h => {
+      ctx.fillRect(lastXdraw, canvas.height - groundHeight, h.x - lastXdraw, groundHeight);
+      lastXdraw = h.x + h.width;
+    });
+    ctx.fillRect(lastXdraw, canvas.height - groundHeight, canvas.width - lastXdraw, groundHeight);
 
     // Plattformen
     ctx.fillStyle = '#888';
-    for (const p of platforms) {
+    platforms.forEach(p => {
       ctx.fillRect(p.x, p.y, p.width, p.height);
-    }
+    });
 
     // Spieler
     ctx.fillStyle = player.color;
