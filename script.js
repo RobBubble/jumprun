@@ -175,7 +175,7 @@ collectibleImage.src = 'sprites/Brot_24.png';
     player.x += player.dx;
     if (player.x < 0) player.x = 0;
     if (player.x + player.width > canvas.width) {
-      currentBackground = (currentBackground + 1) % backgrounds.length;
+      currentBackground = (currentBackground + 1) % backgroundImages.length;
       player.x = 0;
       generateLevel();
     }
