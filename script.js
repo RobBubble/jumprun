@@ -7,19 +7,19 @@ ctx.imageSmoothingEnabled = false;
 
   // Gegner‑Sprite laden
 const enemyImage = new Image();
-enemyImage.src = 'sprites/enemy_sprite.png';
+enemyImage.src = 'sprites/enemy_sprite_48.png';
 
 // Spieler‑Sprite laden
 const playerImage = new Image();
-playerImage.src = 'sprites/cat_sprite_32.png';
+playerImage.src = 'sprites/cat_sprite_48.png';
 
   // Projektil‑Sprite laden
 const projectileImage = new Image();
-projectileImage.src = 'sprites/Kotze.png';
+projectileImage.src = 'sprites/Kotze_15.png';
 
   // Collectible‑Sprite laden
 const collectibleImage = new Image();
-collectibleImage.src = 'sprites/Brot.png';
+collectibleImage.src = 'sprites/Brot_24.png';
 
   // Einstellungen
   const gravity = 0.5;
@@ -29,14 +29,14 @@ collectibleImage.src = 'sprites/Brot.png';
 
   // Startposition des Spielers
   const startX = 50;
-  const startY = canvas.height - groundHeight - 32;
+  const startY = canvas.height - groundHeight - 48;
 
   // Spielerobjekt
   const player = {
     x: startX,
     y: startY,
-    width: 32,
-    height: 32,
+    width: 48,
+    height: 48,
     color: 'red',
     dx: 0,
     dy: 0,
@@ -91,8 +91,8 @@ collectibleImage.src = 'sprites/Brot.png';
     enemies.push({
       x: ex,
       y: startY,
-      width: 32,
-      height: 32,
+      width: 48,
+      height: 48,
       dx: -2,
       dy: 0,
       jumpPower: -10,
@@ -106,9 +106,9 @@ collectibleImage.src = 'sprites/Brot.png';
       const plat = platforms[Math.floor(Math.random() * platforms.length)];
       collectibles.push({
         x: plat.x + plat.width / 2 - 8,
-        y: plat.y - 16,
-        width: 16,
-        height: 16,
+        y: plat.y - 24,
+        width: 24,
+        height: 24,
         color: 'gold'
       });
     }
@@ -133,7 +133,7 @@ collectibleImage.src = 'sprites/Brot.png';
           y: player.y + player.height / 2,
           dx: 8,
           dy: -8,
-          radius: 5,
+          radius: 7.5,
           color: 'yellow'
         });
       }
@@ -339,8 +339,8 @@ projectiles.forEach(proj => {
     // proj.x/proj.y sind aktuell Mittelpunkte – daher um 5px verschieben
     ctx.drawImage(
       projectileImage,
-      proj.x - 5, 
-      proj.y - 5,
+      proj.x - 7.5, 
+      proj.y - 7.5,
       10,    // Breite = 2*radius
       10     // Höhe = 2*radius
     );
