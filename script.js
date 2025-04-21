@@ -341,14 +341,17 @@ if (playerImage.complete) {
   );
 }
 
-    // Projeticles
-ctx.drawImage(
-  projectileImage,
-  proj.x - 15,
-  proj.y - 15,
-  30,    // Breite
-  30     // Höhe
-);
+projectiles.forEach(proj => {
+  if (projectileImage.complete) {
+    ctx.drawImage(
+      projectileImage,
+      proj.x - proj.radius,
+      proj.y - proj.radius,
+      proj.radius * 2,
+      proj.radius * 2
+    );
+  }
+});
 
   
   // Gegner mit Sprite zeichnen (statt grüner Würfel)
