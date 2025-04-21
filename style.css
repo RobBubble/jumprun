@@ -12,7 +12,7 @@ body {
 
 /* Cover (800×400) */
 #cover {
-  width: 800px;
+  width: 1024px;
   height: 400px;
   margin-top: 16px;
   image-rendering: pixelated;
