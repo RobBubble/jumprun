@@ -340,6 +340,16 @@ if (playerImage.complete) {
     player.width, player.height
   );
 }
+
+    // Projeticles
+ctx.drawImage(
+  projectileImage,
+  proj.x - 15,
+  proj.y - 15,
+  30,    // Breite
+  30     // Höhe
+);
+
   
   // Gegner mit Sprite zeichnen (statt grüner Würfel)
 enemies.forEach(e => {
