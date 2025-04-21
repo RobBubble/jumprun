@@ -179,7 +179,7 @@ window.addEventListener('load', () => {
 
     // Boden-Kollision
     const groundY = canvas.height - groundHeight - player.height;
-    const overHole = holes.some(h => 
+    const overHole = holes.some(h =>
       player.x + player.width > h.x && player.x < h.x + h.width
     );
     if (!overHole && player.y + player.height >= canvas.height - groundHeight) {
@@ -191,6 +191,7 @@ window.addEventListener('load', () => {
     // Fallen außerhalb des Bildschirms
     if (player.y > canvas.height) {
       resetGame();
+      requestAnimationFrame(gameLoop);
       return;
     }
 
@@ -260,7 +261,7 @@ window.addEventListener('load', () => {
         e.x = canvas.width + Math.random() * 50;
         e.y = startY;
       }
-      // Spieler-Kollision -> Reset & Abbruch
+      // Spieler-Kollision -> Reset, schedule next frame und Abbruch
       if (
         player.x < e.x + e.width &&
         player.x + player.width > e.x &&
@@ -268,6 +269,7 @@ window.addEventListener('load', () => {
         player.y + player.height > e.y
       ) {
         resetGame();
+        requestAnimationFrame(gameLoop);
         return;
       }
     }
@@ -300,7 +302,7 @@ window.addEventListener('load', () => {
     ctx.fillRect(lastXdraw, canvas.height - groundHeight, canvas.width - lastXdraw, groundHeight);
 
     // Plattformen
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = '#888';  
     platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
 
     // Spieler
