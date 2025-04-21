@@ -3,51 +3,48 @@ window.addEventListener('load', () => {
   const ctx = canvas.getContext("2d");
 
   // Hintergrundmusik
-const bgMusic = new Audio('audio/Pixelträume.mp3');
-bgMusic.loop = true;        // Endlosschleife
-bgMusic.volume = 0.5;       // Lautstärke 0.0–1.0 nach Bedarf anpassen
+  const bgMusic = new Audio('audio/Pixelträume.mp3');
+  bgMusic.loop = true;
+  bgMusic.volume = 0.5;
 
-// Musik starten, sobald der Nutzer mit dem Dokument interagiert (Autoplay‑Richtlinien)
-function tryPlayMusic() {
+  function tryPlayMusic() {
+    bgMusic.play().catch(_ => {
+      console.warn('Musik konnte nicht automatisch starten.');
+    });
+    window.removeEventListener('click', tryPlayMusic);
+  }
+
   bgMusic.play().catch(_ => {
-    // Gegebenenfalls muss der Nutzer einmal klicken, bevor Audio läuft
-    console.warn('Musik konnte nicht automatisch starten.');
+    window.addEventListener('click', tryPlayMusic);
   });
-  // Entferne den Listener, damit wir’s nur einmal probieren
-  window.removeEventListener('click', tryPlayMusic);
-}
-
-// Versuche direkt zu spielen, und wenn das scheitert,
-// starte nach dem ersten Klick.
-bgMusic.play().catch(_ => {
-  window.addEventListener('click', tryPlayMusic);
-});
 
   // Pixel-Art scharf halten
-ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = false;
 
   const backgroundImages = [];
-for (let i = 0; i < 3; i++) {
-  const img = new Image();
-  img.src = `sprites/bg${i}.png`;
-  backgroundImages.push(img);
-}
+  for (let i = 0; i < 3; i++) {
+    const img = new Image();
+    img.src = `sprites/bg${i}.png`;
+    backgroundImages.push(img);
+  }
 
   // Gegner‑Sprite laden
-const enemyImage = new Image();
-enemyImage.src = 'sprites/enemy_sprite_48.png';
+  const enemyImage = new Image();
+  enemyImage.src = 'sprites/enemy_sprite_48.png';
 
-// Spieler‑Sprite laden
-const playerImage = new Image();
-playerImage.src = 'sprites/cat_sprite_48.png';
+  // Spieler‑Sprite laden (Idle und Shooting)
+  const playerImage = new Image();
+  playerImage.src = 'sprites/cat_sprite_48.png';
+  const playerShootImage = new Image();
+  playerShootImage.src = 'sprites/cat_sprite_kotze.png';
 
   // Projektil‑Sprite laden
-const projectileImage = new Image();
-projectileImage.src = 'sprites/Kotze_30.png';
+  const projectileImage = new Image();
+  projectileImage.src = 'sprites/Kotze_30.png';
 
   // Collectible‑Sprite laden
-const collectibleImage = new Image();
-collectibleImage.src = 'sprites/Brot_24.png';
+  const collectibleImage = new Image();
+  collectibleImage.src = 'sprites/Brot_24.png';
 
   // Einstellungen
   const gravity = 0.5;
@@ -64,12 +61,13 @@ collectibleImage.src = 'sprites/Brot_24.png';
     y: startY,
     width: 48,
     height: 48,
-    color: 'red',
     dx: 0,
     dy: 0,
     speed: 3,
     jumpPower: -12,
-    onGround: true
+    onGround: true,
+    currentSprite: playerImage,
+    shootTimeout: null
   };
 
   // Level-Daten
@@ -81,7 +79,6 @@ collectibleImage.src = 'sprites/Brot_24.png';
   // Score
   let score = 0;
 
-  // Generiert ein neues Level
   function generateLevel() {
     platforms = [];
     holes = [];
@@ -98,7 +95,6 @@ collectibleImage.src = 'sprites/Brot_24.png';
     const maxHeightOffset = maxJumpHeight * 0.8;
     let lastX = startX + player.width + 20;
 
-    // Plattformen und Löcher
     for (let i = 0; i < count; i++) {
       const width = 80 + Math.random() * 40;
       const gap = minGap + Math.random() * (maxGap - minGap);
@@ -113,7 +109,6 @@ collectibleImage.src = 'sprites/Brot_24.png';
       lastX = x + width;
     }
 
-    // Ein Gegner pro Szene
     const ex = canvas.width - Math.random() * (canvas.width / 2);
     enemies.push({
       x: ex,
@@ -127,7 +122,6 @@ collectibleImage.src = 'sprites/Brot_24.png';
       jumpCooldown: 0
     });
 
-    // Collectibles generieren (1-2) auf zufälligen Plattformen
     const itemCount = Math.floor(Math.random() * 2) + 1;
     for (let i = 0; i < itemCount; i++) {
       const plat = platforms[Math.floor(Math.random() * platforms.length)];
@@ -141,19 +135,15 @@ collectibleImage.src = 'sprites/Brot_24.png';
     }
   }
 
-  // Projektile-Liste
   const projectiles = [];
-
-  // Tastenstatus
   const keys = {};
+
   document.addEventListener('keydown', e => {
     if (!keys[e.code]) {
-      // Springen
       if ((e.code === 'ArrowUp' || e.code === 'KeyW') && player.onGround) {
         player.dy = player.jumpPower;
         player.onGround = false;
       }
-      // Schießen
       if (e.code === 'Space') {
         projectiles.push({
           x: player.x + player.width,
@@ -163,15 +153,22 @@ collectibleImage.src = 'sprites/Brot_24.png';
           radius: 15,
           color: 'yellow'
         });
+        // Wechsel auf Shooting-Sprite
+        player.currentSprite = playerShootImage;
+        if (player.shootTimeout) clearTimeout(player.shootTimeout);
+        player.shootTimeout = setTimeout(() => {
+          player.currentSprite = playerImage;
+          player.shootTimeout = null;
+        }, 200);
       }
     }
     keys[e.code] = true;
   });
+
   document.addEventListener('keyup', e => {
     keys[e.code] = false;
   });
 
-  // Spiel zurücksetzen
   function resetGame() {
     player.x = startX;
     player.y = startY;
@@ -184,11 +181,9 @@ collectibleImage.src = 'sprites/Brot_24.png';
     generateLevel();
   }
 
-  // Initiales Level generieren
   generateLevel();
 
   function gameLoop() {
-    // Spieler bewegen
     player.dx = 0;
     if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -player.speed;
     if (keys['ArrowRight'] || keys['KeyD']) player.dx = player.speed;
@@ -200,13 +195,11 @@ collectibleImage.src = 'sprites/Brot_24.png';
       generateLevel();
     }
 
-    // Fallphysik anwenden
     player.dy += gravity;
     const oldY = player.y;
     player.y += player.dy;
     player.onGround = false;
 
-    // Spieler-Plattform-Kollision
     if (player.dy > 0) {
       for (const p of platforms) {
         if (
@@ -223,7 +216,6 @@ collectibleImage.src = 'sprites/Brot_24.png';
       }
     }
 
-    // Boden-Kollision
     const groundY = canvas.height - groundHeight - player.height;
     const overHole = holes.some(h =>
       player.x + player.width > h.x && player.x < h.x + h.width
@@ -234,177 +226,39 @@ collectibleImage.src = 'sprites/Brot_24.png';
       player.onGround = true;
     }
 
-    // Fallen außerhalb des Bildschirms
     if (player.y > canvas.height) {
       resetGame();
       requestAnimationFrame(gameLoop);
       return;
     }
 
-    // Projektile updaten & Kollision mit Gegnern
+    // Projektile updaten & Kollision
     for (let i = projectiles.length - 1; i >= 0; i--) {
       const proj = projectiles[i];
-      proj.dy += gravity;
-      proj.x += proj.dx;
-      proj.y += proj.dy;
+      proj.dy += gravity; proj.x += proj.dx; proj.y += proj.dy;
       if (proj.x > canvas.width || proj.y > canvas.height) {
-        projectiles.splice(i, 1);
-        continue;
+        projectiles.splice(i, 1); continue;
       }
       for (let j = enemies.length - 1; j >= 0; j--) {
         const e = enemies[j];
-        if (
-          proj.x > e.x && proj.x < e.x + e.width &&
-          proj.y > e.y && proj.y < e.y + e.height
-        ) {
-          score++;
-          enemies.splice(j, 1);
-          projectiles.splice(i, 1);
-          break;
+        if (proj.x > e.x && proj.x < e.x + e.width && proj.y > e.y && proj.y < e.y + e.height) {
+          score++; enemies.splice(j, 1); projectiles.splice(i, 1); break;
         }
       }
     }
 
-    // Gegner aktualisieren & Kollision mit Spieler
+    // Gegner-Logik...
     for (const e of enemies) {
-      // horizontale Bewegung
       e.x += e.dx;
-      // Springen
       if (e.onGround && e.jumpCooldown <= 0) {
-        e.dy = e.jumpPower;
-        e.onGround = false;
-        e.jumpCooldown = 100 + Math.random() * 100;
+        e.dy = e.jumpPower; e.onGround = false; e.jumpCooldown = 100 + Math.random() * 100;
       }
-      e.jumpCooldown--;
-      // Fallphysik
-      e.dy += gravity;
-      const oldEY = e.y;
-      e.y += e.dy;
-      // Plattformkollision
+      e.jumpCooldown--; e.dy += gravity; const oldEY = e.y; e.y += e.dy;
       if (e.dy > 0) {
         for (const p of platforms) {
-          if (
-            oldEY + e.height <= p.y &&
-            e.y + e.height >= p.y &&
-            e.x + e.width > p.x &&
-            e.x < p.x + p.width
-          ) {
-            e.y = p.y - e.height;
-            e.dy = 0;
-            e.onGround = true;
-            break;
+          if (oldEY + e.height <= p.y && e.y + e.height >= p.y && e.x + e.width > p.x && e.x < p.x + p.width) {
+            e.y = p.y - e.height; e.dy = 0; e.onGround = true; break;
           }
         }
       }
-      // Boden
-      if (e.y + e.height >= canvas.height - groundHeight) {
-        e.y = groundY;
-        e.dy = 0;
-        e.onGround = true;
-      }
-      // Respawn rechts
-      if (e.x + e.width < 0) {
-        e.x = canvas.width + Math.random() * 50;
-        e.y = startY;
-      }
-      // Spieler-Kollision -> Reset, schedule next frame und Abbruch
-      if (
-        player.x < e.x + e.width &&
-        player.x + player.width > e.x &&
-        player.y < e.y + e.height &&
-        player.y + player.height > e.y
-      ) {
-        resetGame();
-        requestAnimationFrame(gameLoop);
-        return;
-      }
-    }
-
-    // Collectibles Kollision und Score-Erhöhung
-    collectibles = collectibles.filter(item => {
-      if (
-        player.x < item.x + item.width &&
-        player.x + player.width > item.x &&
-        player.y < item.y + item.height &&
-        player.y + player.height > item.y
-      ) {
-        score++;
-        return false;
-      }
-      return true;
-    });
-
-// statt Farb‑Fill:
-const bg = backgroundImages[currentBackground];
-if (bg && bg.complete) {
-  ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-}
-
-    // Boden mit Löchern zeichnen
-    ctx.fillStyle = '#F4A6B6';
-    let lastXdraw = 0;
-    holes.forEach(h => {
-      ctx.fillRect(lastXdraw, canvas.height - groundHeight, h.x - lastXdraw, groundHeight);
-      lastXdraw = h.x + h.width;
-    });
-    ctx.fillRect(lastXdraw, canvas.height - groundHeight, canvas.width - lastXdraw, groundHeight);
-
-    // Plattformen
-    ctx.fillStyle = '#A6F4E4';  
-    platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
-
-   // Spieler mit Katze zeichnen (sofern geladen)
-if (playerImage.complete) {
-  ctx.drawImage(
-    playerImage,
-    player.x, player.y,
-    player.width, player.height
-  );
-}
-
-projectiles.forEach(proj => {
-  if (projectileImage.complete) {
-    ctx.drawImage(
-      projectileImage,
-      proj.x - proj.radius,
-      proj.y - proj.radius,
-      proj.radius * 2,
-      proj.radius * 2
-    );
-  }
-});
-
-  
-  // Gegner mit Sprite zeichnen (statt grüner Würfel)
-enemies.forEach(e => {
-  if (enemyImage.complete) {
-    ctx.drawImage(
-      enemyImage,
-      e.x, e.y,
-      e.width, e.height
-    );
-  }
-});
-
-// Collectibles als Sprite zeichnen
-collectibles.forEach(item => {
-  if (collectibleImage.complete) {
-    ctx.drawImage(
-      collectibleImage,
-      item.x, item.y,
-      item.width, item.height
-    );
-  }
-});
-
-    // Score anzeigen
-    ctx.fillStyle = 'white';
-    ctx.font = '16px Arial';
-    ctx.fillText('Punkte: ' + score, 10, 20);
-
-    requestAnimationFrame(gameLoop);
-  }
-
-  gameLoop();
-  
-});
+      if (e.y + e.height >= canvas.height - groundHeight) { e.y = groundY; e.dy =
