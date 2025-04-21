@@ -320,7 +320,7 @@ if (bg && bg.complete) {
 }
 
     // Boden mit Löchern zeichnen
-    ctx.fillStyle = '#444';
+    ctx.fillStyle = '#F4A6B6';
     let lastXdraw = 0;
     holes.forEach(h => {
       ctx.fillRect(lastXdraw, canvas.height - groundHeight, h.x - lastXdraw, groundHeight);
@@ -329,7 +329,7 @@ if (bg && bg.complete) {
     ctx.fillRect(lastXdraw, canvas.height - groundHeight, canvas.width - lastXdraw, groundHeight);
 
     // Plattformen
-    ctx.fillStyle = '#888';  
+    ctx.fillStyle = '#A6F4E4';  
     platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
 
    // Spieler mit Katze zeichnen (sofern geladen)
