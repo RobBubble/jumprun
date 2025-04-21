@@ -6,13 +6,16 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Cover-Bild über dem Spiel -->
+  <!-- Cover-Bild -->
   <img id="cover" src="sprites/Cover.png" alt="Cover">
 
-  <!-- Start-Overlay -->
-  <div id="startOverlay">Click to Start</div>
+  <!-- Checkbox-Hack für Click-to-Start -->
+  <input type="checkbox" id="startToggle" hidden>
 
-  <!-- Canvas mit Blur‑Klasse bis zum Klick -->
+  <!-- Overlay als Label zur Checkbox -->
+  <label id="startOverlay" for="startToggle">Click to Start</label>
+
+  <!-- Canvas mit initialem Blur -->
   <canvas id="gameCanvas" class="blurred" width="800" height="400"></canvas>
 
   <script src="script.js"></script>
