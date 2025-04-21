@@ -5,6 +5,10 @@ window.addEventListener('load', () => {
   // Pixel-Art scharf halten
 ctx.imageSmoothingEnabled = false;
 
+  // Gegner‑Sprite laden
+const enemyImage = new Image();
+enemyImage.src = 'sprites/enemy_sprite.png';
+
 // Spieler‑Sprite laden
 const playerImage = new Image();
 playerImage.src = 'sprites/cat_sprite_32.png';
@@ -329,11 +333,16 @@ if (playerImage.complete) {
       ctx.fill();
     });
 
-    // Gegner
-    enemies.forEach(e => {
-      ctx.fillStyle = 'green';
-      ctx.fillRect(e.x, e.y, e.width, e.height);
-    });
+  // Gegner mit Sprite zeichnen (statt grüner Würfel)
+enemies.forEach(e => {
+  if (enemyImage.complete) {
+    ctx.drawImage(
+      enemyImage,
+      e.x, e.y,
+      e.width, e.height
+    );
+  }
+});
 
     // Collectibles
     collectibles.forEach(item => {
