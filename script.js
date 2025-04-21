@@ -105,10 +105,12 @@ window.addEventListener('load', () => {
   const keys = {};
   document.addEventListener('keydown', e => {
     if (!keys[e.code]) {
+      // Springen
       if ((e.code === 'ArrowUp' || e.code === 'KeyW') && player.onGround) {
         player.dy = player.jumpPower;
         player.onGround = false;
       }
+      // Schießen
       if (e.code === 'Space') {
         projectiles.push({
           x: player.x + player.width,
@@ -139,11 +141,11 @@ window.addEventListener('load', () => {
     generateLevel();
   }
 
-  // Initiales Level
+  // Initiales Level generieren
   generateLevel();
 
   function gameLoop() {
-    // Spielerbewegung
+    // Spieler bewegen
     player.dx = 0;
     if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -player.speed;
     if (keys['ArrowRight'] || keys['KeyD']) player.dx = player.speed;
@@ -155,9 +157,9 @@ window.addEventListener('load', () => {
       generateLevel();
     }
 
-    // Fallphysik
+    // Fallphysik anwenden
     player.dy += gravity;
-    let oldY = player.y;
+    const oldY = player.y;
     player.y += player.dy;
     player.onGround = false;
 
@@ -180,17 +182,21 @@ window.addEventListener('load', () => {
 
     // Boden-Kollision
     const groundY = canvas.height - groundHeight - player.height;
-    const overHole = holes.some(h => player.x + player.width > h.x && player.x < h.x + h.width);
+    const overHole = holes.some(h => 
+      player.x + player.width > h.x && player.x < h.x + h.width
+    );
     if (!overHole && player.y + player.height >= canvas.height - groundHeight) {
       player.y = groundY;
       player.dy = 0;
       player.onGround = true;
     }
+    // Fall außerhalb des Bildschirms
     if (player.y > canvas.height) {
-      resetGame(); return;
+      resetGame();
+      return;
     }
 
-    // Projektile update & Kollision mit Gegnern
+    // Projektile updaten & Kollision mit Gegnern
     for (let i = projectiles.length - 1; i >= 0; i--) {
       const proj = projectiles[i];
       proj.dy += gravity;
@@ -206,7 +212,6 @@ window.addEventListener('load', () => {
           proj.x > e.x && proj.x < e.x + e.width &&
           proj.y > e.y && proj.y < e.y + e.height
         ) {
-          // Erhöhe Score für getroffenen Gegner
           score++;
           enemies.splice(j, 1);
           projectiles.splice(i, 1);
@@ -215,22 +220,26 @@ window.addEventListener('load', () => {
       }
     }
 
-    // Gegner update
-    enemies.forEach(e => {
+    // Gegner aktualisieren & Kollision mit Spieler
+    for (const e of enemies) {
+      // Bewegung
       e.x += e.dx;
+      // Springen
       if (e.onGround && e.jumpCooldown <= 0) {
         e.dy = e.jumpPower;
         e.onGround = false;
         e.jumpCooldown = 100 + Math.random() * 100;
       }
       e.jumpCooldown--;
+      // Fallphysik
       e.dy += gravity;
-      oldY = e.y;
+      const oldEY = e.y;
       e.y += e.dy;
+      // Plattformkollision
       if (e.dy > 0) {
         for (const p of platforms) {
           if (
-            oldY + e.height <= p.y &&
+            oldEY + e.height <= p.y &&
             e.y + e.height >= p.y &&
             e.x + e.width > p.x &&
             e.x < p.x + p.width
@@ -242,24 +251,30 @@ window.addEventListener('load', () => {
           }
         }
       }
+      // Boden
       if (e.y + e.height >= canvas.height - groundHeight) {
         e.y = groundY;
         e.dy = 0;
         e.onGround = true;
       }
+      // Respawn rechts
       if (e.x + e.width < 0) {
         e.x = canvas.width + Math.random() * 50;
         e.y = startY;
       }
+      // Spieler-Kollision -> Reset und Abbruch
       if (
         player.x < e.x + e.width &&
         player.x + player.width > e.x &&
         player.y < e.y + e.height &&
         player.y + player.height > e.y
-      ) { resetGame(); }
-    });
+      ) {
+        resetGame();
+        return;
+      }
+    }
 
-    // Collectibles Kollision und Score-Erhöhung
+    // Collectibles
     collectibles = collectibles.filter(item => {
       if (
         player.x < item.x + item.width &&
@@ -277,7 +292,7 @@ window.addEventListener('load', () => {
     ctx.fillStyle = backgrounds[currentBackground];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Boden mit Löchern
+    // Boden mit Löchern zeichnen
     ctx.fillStyle = '#444';
     let lastXdraw = 0;
     holes.forEach(h => {
