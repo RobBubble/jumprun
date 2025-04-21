@@ -8,7 +8,7 @@ const groundHeight = 50;
 // Spielerobjekt
 const player = {
   x: 50,
-  y: 300,
+  y: canvas.height - groundHeight - 32, // Automatisch auf dem Boden
   width: 32,
   height: 32,
   color: "red",
@@ -54,6 +54,8 @@ function gameLoop() {
     player.y = groundY;
     player.dy = 0;
     player.onGround = true;
+  } else {
+    player.onGround = false;
   }
 
   // Canvas leeren
