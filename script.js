@@ -3,7 +3,7 @@ window.addEventListener('load', () => {
   const ctx = canvas.getContext("2d");
 
   // Hintergrundmusik
-const bgMusic = new Audio('audio/pixelträume.mp3');
+const bgMusic = new Audio('audio/Pixelträume.mp3');
 bgMusic.loop = true;        // Endlosschleife
 bgMusic.volume = 0.5;       // Lautstärke 0.0–1.0 nach Bedarf anpassen
 
