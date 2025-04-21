@@ -8,7 +8,7 @@ window.addEventListener('load', () => {
   const backgrounds = ['#222', '#2E8B57', '#8B4513', '#4B0082'];
   let currentBackground = 0;
 
-  // Startposition des Spielers
+  // Spieler-Startposition
   const startX = 50;
   const startY = canvas.height - groundHeight - 32;
 
@@ -26,6 +26,7 @@ window.addEventListener('load', () => {
     onGround: true
   };
 
+  // Level-Daten
   let platforms = [];
   let holes = [];
 
@@ -33,44 +34,58 @@ window.addEventListener('load', () => {
     platforms = [];
     holes = [];
     const groundY = canvas.height - groundHeight - player.height;
-    const count = Math.floor(Math.random() * 3) + 2; // 2 bis 4 Plattformen
-    // Berechne maximale Sprungweite und -höhe
+    const count = Math.floor(Math.random() * 3) + 2;
     const maxFrames = Math.abs(player.jumpPower) / gravity * 2;
     const maxDist = player.speed * maxFrames;
     const minGap = 50;
-    const maxGap = maxDist * 0.8; // 80% der maximalen Distanz
+    const maxGap = maxDist * 0.8;
     const maxJumpHeight = (player.jumpPower * player.jumpPower) / (2 * gravity);
     const minHeightOffset = 20;
-    const maxHeightOffset = maxJumpHeight * 0.8; // 80% der max Höhe
-
-    let lastX = startX + player.width + 20; // Freiraum nach Start
+    const maxHeightOffset = maxJumpHeight * 0.8;
+    let lastX = startX + player.width + 20;
 
     for (let i = 0; i < count; i++) {
-      const width = 80 + Math.random() * 40; // 80 bis 120px breit
+      const width = 80 + Math.random() * 40;
       const gap = minGap + Math.random() * (maxGap - minGap);
       let x = lastX + gap;
       if (x + width > canvas.width - 10) {
         x = canvas.width - 10 - width;
       }
       const verticalOffset = minHeightOffset + Math.random() * (maxHeightOffset - minHeightOffset);
-      const y = groundY - verticalOffset;
+      const y = (canvas.height - groundHeight - player.height) - verticalOffset;
       platforms.push({ x, y, width, height: 10 });
       holes.push({ x, width });
       lastX = x + width;
     }
   }
 
-  // Initiales Level
-  generateLevel();
+  // Projektil-Liste
+  const projectiles = [];
 
+  // Tastenstatus
   const keys = {};
   document.addEventListener('keydown', e => {
-    keys[e.code] = true;
-    if ((e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') && player.onGround) {
-      player.dy = player.jumpPower;
-      player.onGround = false;
+    if (!keys[e.code]) {
+      // Springen nur bei ArrowUp oder W
+      if ((e.code === 'ArrowUp' || e.code === 'KeyW') && player.onGround) {
+        player.dy = player.jumpPower;
+        player.onGround = false;
+      }
+      // Schießen mit Leertaste
+      if (e.code === 'Space') {
+        projectiles.push({
+          x: player.x + player.width,
+          y: player.y + player.height / 2,
+          dx: 8,
+          dy: -8,
+          radius: 5,
+          color: 'yellow'
+        });
+      }
     }
+    keys[e.code] = true;
   });
+
   document.addEventListener('keyup', e => {
     keys[e.code] = false;
   });
@@ -82,11 +97,14 @@ window.addEventListener('load', () => {
     player.dy = 0;
     player.onGround = true;
     currentBackground = 0;
+    projectiles.length = 0;
     generateLevel();
   }
 
+  generateLevel();
+
   function gameLoop() {
-    // Horizontal
+    // Spieler horizontal bewegen
     player.dx = 0;
     if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -player.speed;
     if (keys['ArrowRight'] || keys['KeyD']) player.dx = player.speed;
@@ -99,7 +117,7 @@ window.addEventListener('load', () => {
       generateLevel();
     }
 
-    // Fall
+    // Schwerkraft und Vertikalbewegung
     player.dy += gravity;
     const oldY = player.y;
     player.y += player.dy;
@@ -136,8 +154,19 @@ window.addEventListener('load', () => {
       resetGame();
     }
 
+    // Projektile aktualisieren
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+      const proj = projectiles[i];
+      proj.dy += gravity;
+      proj.x += proj.dx;
+      proj.y += proj.dy;
+      // Entfernen wenn außerhalb
+      if (proj.x > canvas.width || proj.y > canvas.height) {
+        projectiles.splice(i, 1);
+      }
+    }
+
     // Zeichnen
-    // Hintergrund
     ctx.fillStyle = backgrounds[currentBackground];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -152,13 +181,19 @@ window.addEventListener('load', () => {
 
     // Plattformen
     ctx.fillStyle = '#888';
-    platforms.forEach(p => {
-      ctx.fillRect(p.x, p.y, p.width, p.height);
-    });
+    platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
 
     // Spieler
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Projektile zeichnen
+    projectiles.forEach(proj => {
+      ctx.beginPath();
+      ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI * 2);
+      ctx.fillStyle = proj.color;
+      ctx.fill();
+    });
 
     requestAnimationFrame(gameLoop);
   }
