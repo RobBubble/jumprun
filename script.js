@@ -13,6 +13,10 @@ enemyImage.src = 'sprites/enemy_sprite.png';
 const playerImage = new Image();
 playerImage.src = 'sprites/cat_sprite_32.png';
 
+  // Projektil‑Sprite laden
+const projectileImage = new Image();
+projectileImage.src = 'sprites/Kotze.png';
+
   // Einstellungen
   const gravity = 0.5;
   const groundHeight = 50;
@@ -325,13 +329,19 @@ if (playerImage.complete) {
   );
 }
 
-    // Projektile
-    projectiles.forEach(proj => {
-      ctx.beginPath();
-      ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI * 2);
-      ctx.fillStyle = proj.color;
-      ctx.fill();
-    });
+  // Projektile als Sprite zeichnen
+projectiles.forEach(proj => {
+  if (projectileImage.complete) {
+    // proj.x/proj.y sind aktuell Mittelpunkte – daher um 5px verschieben
+    ctx.drawImage(
+      projectileImage,
+      proj.x - 5, 
+      proj.y - 5,
+      10,    // Breite = 2*radius
+      10     // Höhe = 2*radius
+    );
+  }
+});
 
   // Gegner mit Sprite zeichnen (statt grüner Würfel)
 enemies.forEach(e => {
