@@ -2,155 +2,95 @@ window.addEventListener('load', () => {
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
-  // === Physik & Einstellungen ===
+  // Einstellungen
   const gravity = 0.5;
   const groundHeight = 50;
   const backgrounds = ['#222', '#2E8B57', '#8B4513', '#4B0082'];
   let currentBackground = 0;
 
-  // === Sprite-Sheet laden ===
-  const playerSheet = new Image();
-  const TOTAL_FRAMES = 4;  // Anzahl der Frames im Sheet
-  let FRAME_W = 0, FRAME_H = 0;
-  let spriteLoaded = false;
+  // Lade statisches Cat-Sprite (nur obere linke 32×32 Pixel)
+  const catSprite = new Image();
+  catSprite.src = 'sprites/cat_sheet.png';
 
-  playerSheet.src = 'sprites/cat_sheet.png';
-  playerSheet.onload = () => {
-    // Dynamische Breite/Höhe pro Frame
-    FRAME_W = playerSheet.width / TOTAL_FRAMES;
-    FRAME_H = playerSheet.height;
-    console.log(`✅ Sprite geladen: Gesamtgröße ${playerSheet.width}×${playerSheet.height}, Framegröße ${FRAME_W}×${FRAME_H}`);
-    spriteLoaded = true;
-    // Start des Spiels erst nach Laden
-    init();
-    requestAnimationFrame(gameLoop);
+  // Spielfeld-Objekte
+  const SPRITE_SIZE = 32;
+  let player = {
+    x: 50,
+    y: canvas.height - groundHeight - SPRITE_SIZE,
+    width: SPRITE_SIZE,
+    height: SPRITE_SIZE,
+    dx: 0,
+    dy: 0,
+    speed: 3,
+    jumpPower: -12,
+    onGround: true
   };
-  playerSheet.onerror = () => {
-    console.error('❌ Sprite-Sheet nicht gefunden unter sprites/cat_sheet.png');
-  };
-
-  // === Animation ===
-  let currentFrame = 0;
-  let frameTimer = 0;
-  const FRAME_DURATION = 200; // ms
-
-  // === Spieler ===
-  const startX = 50;
-  let player = null; // wird in init gesetzt
-
-  // === Level-Daten ===
-  let platforms = [], holes = [], enemies = [], collectibles = [], projectiles = [];
-  let score = 0;
-
-  function init() {
-    // Spieler-Objekt anlegen, jetzt mit korrekter FRAME_W/FRAME_H
-    player = {
-      x: startX,
-      y: canvas.height - groundHeight - FRAME_H,
-      width: FRAME_W,
-      height: FRAME_H,
-      dx: 0,
-      dy: 0,
-      speed: 3,
-      jumpPower: -12,
-      onGround: true
-    };
-    generateLevel();
-    setupControls();
-  }
+  let platforms = [], holes = [], enemies = [], collectibles = [], projectiles = [], score = 0;
 
   function generateLevel() {
-    // (wie gehabt, nur nutze player.width/player.height für groundY)
     platforms = []; holes = []; enemies = []; collectibles = []; projectiles = [];
     const groundY = canvas.height - groundHeight - player.height;
     const count = Math.floor(Math.random() * 3) + 2;
-    const maxFrames = Math.abs(player.jumpPower) / gravity * 2;
-    const maxDist = player.speed * maxFrames;
-    const minGap = 50, maxGap = maxDist * 0.8;
     const maxJumpH = (player.jumpPower * player.jumpPower) / (2 * gravity);
-    const minYOffset = 20, maxYOffset = maxJumpH * 0.8;
-    let lastX = startX + player.width + 20;
-
-    // Plattformen & Löcher
+    let lastX = player.x + player.width + 20;
     for (let i = 0; i < count; i++) {
       const w = 80 + Math.random() * 40;
-      const gap = minGap + Math.random() * (maxGap - minGap);
+      const gap = 50 + Math.random() * 100;
       let x = lastX + gap;
       if (x + w > canvas.width - 10) x = canvas.width - 10 - w;
-      const yOff = minYOffset + Math.random() * (maxYOffset - minYOffset);
-      const y = groundY - yOff;
+      const y = groundY - (20 + Math.random() * (maxJumpH * 0.5));
       platforms.push({ x, y, width: w, height: 10 });
       holes.push({ x, width: w });
       lastX = x + w;
     }
-
     // Ein Gegner
     const ex = canvas.width - Math.random() * (canvas.width / 2);
-    enemies = [{
-      x: ex, y: groundY,
-      width: player.width, height: player.height,
-      dx: -2, dy: 0, jumpPower: -10,
-      onGround: true, jumpCooldown: 0
-    }];
-
+    enemies = [{ x: ex, y: groundY, width: SPRITE_SIZE, height: SPRITE_SIZE, dx: -2, dy: 0, jumpPower: -10, onGround: true, jumpCooldown: 0 }];
     // Collectibles
-    const itemCount = Math.floor(Math.random() * 2) + 1;
     collectibles = [];
-    for (let i = 0; i < itemCount; i++) {
-      const p = platforms[Math.floor(Math.random() * platforms.length)];
-      collectibles.push({
-        x: p.x + p.width / 2 - 8,
-        y: p.y - 16,
-        width: 16,
-        height: 16,
-        color: 'gold'
-      });
+    for (let i = 0; i < 2; i++) {
+      const plat = platforms[Math.floor(Math.random() * platforms.length)];
+      collectibles.push({ x: plat.x + plat.width/2 - 8, y: plat.y - 16, width: 16, height: 16, color: 'gold' });
     }
     score = 0;
   }
-
-  function setupControls() {
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
+  function resetGame() {
+    player.x = 50;
+    player.y = canvas.height - groundHeight - SPRITE_SIZE;
+    player.dx = player.dy = 0;
+    player.onGround = true;
+    currentBackground = 0;
+    generateLevel();
   }
+
+  // Steuerung
   const keys = {};
-  function onKeyDown(e) {
+  window.addEventListener('keydown', e => {
     if (!keys[e.code]) {
       if ((e.code === 'ArrowUp' || e.code === 'KeyW') && player.onGround) {
         player.dy = player.jumpPower;
         player.onGround = false;
       }
       if (e.code === 'Space') {
-        projectiles.push({
-          x: player.x + player.width,
-          y: player.y + player.height / 2,
-          dx: 8, dy: -8,
-          radius: 5, color: 'yellow'
-        });
+        projectiles.push({ x: player.x + player.width, y: player.y + player.height/2, dx: 8, dy: -8, radius: 5, color: 'yellow' });
       }
     }
     keys[e.code] = true;
-  }
-  function onKeyUp(e) {
-    keys[e.code] = false;
-  }
+  });
+  window.addEventListener('keyup', e => { keys[e.code] = false; });
 
-  function resetGame() {
-    player.x = startX;
-    player.y = canvas.height - groundHeight - player.height;
-    player.dx = player.dy = 0;
-    player.onGround = true;
-    currentBackground = 0;
-    projectiles = [];
-    generateLevel();
-  }
+  // Start
+  generateLevel();
+  let lastTime = performance.now();
 
   function gameLoop(time) {
-    // === Update ===
-    // Bewegung
+    const delta = time - lastTime;
+    lastTime = time;
+
+    // Bewegung horizontal
     player.dx = 0;
-    if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -player.speed;
-    if (keys['ArrowRight'] || keys['KeyD']) player.dx = player.speed;
+    if (keys['ArrowLeft']||keys['KeyA']) player.dx = -player.speed;
+    if (keys['ArrowRight']||keys['KeyD']) player.dx = player.speed;
     player.x += player.dx;
     if (player.x < 0) player.x = 0;
     if (player.x + player.width > canvas.width) {
@@ -158,21 +98,18 @@ window.addEventListener('load', () => {
       resetGame();
     }
 
-    // Fall
+    // Vertikale Bewegung
     player.dy += gravity;
     const oldY = player.y;
     player.y += player.dy;
     player.onGround = false;
-
-    // Plattform-Kollision
+    // Plattformkollision
     if (player.dy > 0) {
       for (const p of platforms) {
-        if (
-          oldY + player.height <= p.y &&
-          player.y + player.height >= p.y &&
-          player.x + player.width > p.x &&
-          player.x < p.x + p.width
-        ) {
+        if (oldY + player.height <= p.y &&
+            player.y + player.height >= p.y &&
+            player.x + player.width > p.x &&
+            player.x < p.x + p.width) {
           player.y = p.y - player.height;
           player.dy = 0;
           player.onGround = true;
@@ -180,8 +117,7 @@ window.addEventListener('load', () => {
         }
       }
     }
-
-    // Boden/Löcher
+    // Boden & Löcher
     const groundY = canvas.height - groundHeight - player.height;
     const overHole = holes.some(h => player.x + player.width > h.x && player.x < h.x + h.width);
     if (!overHole && player.y + player.height >= canvas.height - groundHeight) {
@@ -193,49 +129,48 @@ window.addEventListener('load', () => {
       resetGame();
     }
 
-    // (Hier folgen Gegner-, Projektile-, Collectible-Logiken unverändert…)
+    // (Gegner-, Projektile-, Collectible-Update wie gehabt...) -- omitted for brevity --
 
-    // === Animations-Logik ===
-    if (spriteLoaded) {
-      if (!player.onGround) {
-        currentFrame = TOTAL_FRAMES - 1;            // letzter Frame = Sprung
-      } else if (player.dx !== 0) {
-        frameTimer += (time - (gameLoop.lastTime || time));
-        if (frameTimer >= FRAME_DURATION) {
-          frameTimer -= FRAME_DURATION;
-          currentFrame = currentFrame === 1 ? 2 : 1; // Laufzyklus zwischen 1-2
-        }
-      } else {
-        currentFrame = 0;                           // Ruhe-Frame
-      }
-    }
-
-    // === Zeichnen ===
-    // Hintergrund
+    // Zeichnen
     ctx.fillStyle = backgrounds[currentBackground];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Boden mit Löchern, Plattformen, Gegner, Collectibles, Projektile (wie gehabt…)
-
-    // Spieler zeichnen (only if loaded)
-    if (spriteLoaded) {
-      ctx.drawImage(
-        playerSheet,
-        currentFrame * FRAME_W, 0, FRAME_W, FRAME_H,
-        player.x, player.y, FRAME_W, FRAME_H
-      );
-    } else {
-      // Platzhalter
-      ctx.fillStyle = 'magenta';
-      ctx.fillRect(player.x, player.y, FRAME_W, FRAME_H);
+    // Boden mit Löchern
+    ctx.fillStyle = '#444';
+    let lastX = 0;
+    for (const h of holes) {
+      ctx.fillRect(lastX, canvas.height - groundHeight, h.x - lastX, groundHeight);
+      lastX = h.x + h.width;
     }
+    ctx.fillRect(lastX, canvas.height - groundHeight, canvas.width - lastX, groundHeight);
+    // Plattformen
+    ctx.fillStyle = '#888';
+    for (const p of platforms) ctx.fillRect(p.x, p.y, p.width, p.height);
+    // Collectibles
+    for (const c of collectibles) {
+      ctx.fillStyle = c.color; ctx.fillRect(c.x, c.y, c.width, c.height);
+    }
+    // Projektile
+    for (const pr of projectiles) {
+      ctx.beginPath(); ctx.arc(pr.x, pr.y, pr.radius, 0, Math.PI*2);
+      ctx.fillStyle = pr.color; ctx.fill();
+    }
+    // Gegner
+    ctx.fillStyle = 'green';
+    for (const e of enemies) ctx.fillRect(e.x, e.y, e.width, e.height);
+
+    // Spieler mit statischem Sprite (erster Frame)
+    ctx.drawImage(catSprite,
+      0, 0, SPRITE_SIZE, SPRITE_SIZE,
+      player.x, player.y, SPRITE_SIZE, SPRITE_SIZE
+    );
 
     // Score
     ctx.fillStyle = 'white';
     ctx.font = '16px Arial';
     ctx.fillText('Score: ' + score, 10, 20);
 
-    gameLoop.lastTime = time;
     requestAnimationFrame(gameLoop);
   }
+
+  requestAnimationFrame(gameLoop);
 });
