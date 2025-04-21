@@ -6,21 +6,20 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Gesamt-Wrapper: Spiel links, Legende rechts -->
-  <div id="mainContainer">
-    
-    <!-- Spiel-Bereich: Cover + Canvas/Overlay -->
-    <div id="gameContainer">
-      <img id="cover" src="sprites/Cover.png" alt="Cover">
-      
-      <div id="canvasContainer">
-        <input type="checkbox" id="startToggle" hidden>
-        <canvas id="gameCanvas" class="blurred" width="800" height="400"></canvas>
-        <label id="startOverlay" for="startToggle">Click to Start</label>
-      </div>
+  <!-- Cover-Bild über dem Spiel -->
+  <img id="cover" src="sprites/Cover.png" alt="Cover">
+
+  <!-- Spielbereich mit Canvas und Legende nebeneinander -->
+  <div id="playArea">
+    <div id="canvasContainer">
+      <!-- Checkbox-Hack für Click-to-Start -->
+      <input type="checkbox" id="startToggle" hidden>
+      <!-- Canvas mit initialem Blur -->
+      <canvas id="gameCanvas" class="blurred" width="800" height="400"></canvas>
+      <!-- Overlay als Label zur Checkbox, zentriert über dem Canvas -->
+      <label id="startOverlay" for="startToggle">Click to Start</label>
     </div>
-    
-    <!-- Legende rechts -->
+    <!-- Legende neben dem Canvas -->
     <img id="legend" src="sprites/Legende.png" alt="Spiel-Legende">
   </div>
 
