@@ -31,7 +31,6 @@ collectibleImage.src = 'sprites/Brot_24.png';
   // Einstellungen
   const gravity = 0.5;
   const groundHeight = 50;
-  const backgrounds = ['#222', '#2E8B57', '#8B4513', '#4B0082'];
   let currentBackground = 0;
 
   // Startposition des Spielers
@@ -342,21 +341,19 @@ if (playerImage.complete) {
   );
 }
 
-  // Projektile als Sprite zeichnen
+// Projektile als Sprite zeichnen
 projectiles.forEach(proj => {
-  if (projectileImage.complete) {
-    // proj.x/proj.y sind aktuell Mittelpunkte – daher um 5px verschieben
-  projectiles.forEach(proj => {
-  if (projectileImage.complete) {
-    ctx.drawImage(
-      projectileImage,
-      proj.x - proj.radius,
-      proj.y - proj.radius,
-      proj.radius * 2,
-      proj.radius * 2
-    );
-  }
-});
+   if (projectileImage.complete) {
+     // proj.x/proj.y sind Mittelpunkte – deshalb um proj.radius verschieben
+     ctx.drawImage(
+       projectileImage,
+       proj.x - proj.radius,
+       proj.y - proj.radius,
+       proj.radius * 2,
+       proj.radius * 2
+     );
+   }
+ });
   
 
   // Gegner mit Sprite zeichnen (statt grüner Würfel)
