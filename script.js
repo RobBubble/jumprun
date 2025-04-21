@@ -2,6 +2,13 @@ window.addEventListener('load', () => {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
+  // Pixel-Art scharf halten
+ctx.imageSmoothingEnabled = false;
+
+// Spieler‑Sprite laden
+const playerImage = new Image();
+playerImage.src = 'sprites/cat_sprite_32.png';
+
   // Einstellungen
   const gravity = 0.5;
   const groundHeight = 50;
@@ -305,9 +312,14 @@ window.addEventListener('load', () => {
     ctx.fillStyle = '#888';  
     platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
 
-    // Spieler
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+   // Spieler mit Katze zeichnen (sofern geladen)
+if (playerImage.complete) {
+  ctx.drawImage(
+    playerImage,
+    player.x, player.y,
+    player.width, player.height
+  );
+}
 
     // Projektile
     projectiles.forEach(proj => {
