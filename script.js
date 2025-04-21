@@ -22,7 +22,7 @@ playerImage.src = 'sprites/cat_sprite_48.png';
 
   // Projektil‑Sprite laden
 const projectileImage = new Image();
-projectileImage.src = 'sprites/Kotze_15.png';
+projectileImage.src = 'sprites/Kotze_30.png';
 
   // Collectible‑Sprite laden
 const collectibleImage = new Image();
@@ -140,7 +140,7 @@ collectibleImage.src = 'sprites/Brot_24.png';
           y: player.y + player.height / 2,
           dx: 8,
           dy: -8,
-          radius: 7.5,
+          radius: 15,
           color: 'yellow'
         });
       }
@@ -348,8 +348,8 @@ projectiles.forEach(proj => {
     // proj.x/proj.y sind aktuell Mittelpunkte – daher um 5px verschieben
     ctx.drawImage(
       projectileImage,
-      proj.x - 7.5, 
-      proj.y - 7.5,
+      proj.x - 15, 
+      proj.y - 15,
       10,    // Breite = 2*radius
       10     // Höhe = 2*radius
     );
