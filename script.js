@@ -315,7 +315,7 @@ collectibleImage.src = 'sprites/Brot_24.png';
 
 // statt Farb‑Fill:
 const bg = backgroundImages[currentBackground];
-if (bg.complete) {
+if (bg && bg.complete) {
   ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
 }
 
@@ -341,6 +341,7 @@ if (playerImage.complete) {
   );
 }
 
+    // Projeticles
 ctx.drawImage(
   projectileImage,
   proj.x - 15,
