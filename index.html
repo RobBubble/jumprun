@@ -9,9 +9,10 @@
   <!-- Cover-Bild über dem Spiel -->
   <img id="cover" src="sprites/Cover.png" alt="Cover">
 
-  <!-- Spielbereich mit Canvas und Legende nebeneinander -->
+  <!-- Spielbereich: Canvas und Legende nebeneinander -->
   <div id="playArea">
-    <div id="canvasContainer">
+    <!-- Wrapper für Canvas + Overlay -->
+    <div id="canvasWrapper">
       <!-- Checkbox-Hack für Click-to-Start -->
       <input type="checkbox" id="startToggle" hidden>
       <!-- Canvas mit initialem Blur -->
@@ -20,7 +21,9 @@
       <label id="startOverlay" for="startToggle">Click to Start</label>
     </div>
     <!-- Legende neben dem Canvas -->
-    <img id="legend" src="sprites/Legende.png" alt="Spiel-Legende">
+    <div id="legendWrapper">
+      <img id="legend" src="sprites/Legende.png" alt="Spiel-Legende">
+    </div>
   </div>
 
   <script src="script.js"></script>
