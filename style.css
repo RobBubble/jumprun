@@ -1,3 +1,5 @@
+/* style.css */
+
 body {
   margin: 0;
   background-color: #D84D3E;
@@ -6,8 +8,10 @@ body {
   align-items: center;
   justify-content: flex-start;
   height: 100vh;
+  position: relative;
 }
 
+/* Cover (800×400) */
 #cover {
   width: 800px;
   height: 400px;
@@ -16,6 +20,26 @@ body {
   image-rendering: pixelated;
 }
 
+/* Overlay „Click to Start“ */
+#startOverlay {
+  position: absolute;
+  top: calc(50% + 200px); /* 200px Halbcover + 50% Canvas */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Arial, sans-serif;
+  font-size: 48px;
+  color: white;
+  text-shadow: 2px 2px 4px #000;
+  z-index: 10;
+  cursor: pointer;
+}
+
+/* Canvas am Anfang unscharf */
+canvas.blurred {
+  filter: blur(6px);
+}
+
+/* Canvas-Rahmen und Pixel-Art */
 canvas {
   border: 2px solid white;
   image-rendering: pixelated;
