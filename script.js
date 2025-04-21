@@ -17,6 +17,10 @@ playerImage.src = 'sprites/cat_sprite_32.png';
 const projectileImage = new Image();
 projectileImage.src = 'sprites/Kotze.png';
 
+  // Collectible‑Sprite laden
+const collectibleImage = new Image();
+collectibleImage.src = 'sprites/Brot.png';
+
   // Einstellungen
   const gravity = 0.5;
   const groundHeight = 50;
@@ -354,16 +358,21 @@ enemies.forEach(e => {
   }
 });
 
-    // Collectibles
-    collectibles.forEach(item => {
-      ctx.fillStyle = item.color;
-      ctx.fillRect(item.x, item.y, item.width, item.height);
-    });
+// Collectibles als Sprite zeichnen
+collectibles.forEach(item => {
+  if (collectibleImage.complete) {
+    ctx.drawImage(
+      collectibleImage,
+      item.x, item.y,
+      item.width, item.height
+    );
+  }
+});
 
     // Score anzeigen
     ctx.fillStyle = 'white';
     ctx.font = '16px Arial';
-    ctx.fillText('Score: ' + score, 10, 20);
+    ctx.fillText('Punkte: ' + score, 10, 20);
 
     requestAnimationFrame(gameLoop);
   }
