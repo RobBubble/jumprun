@@ -1,60 +1,67 @@
-/* style.css */
-
 body {
   margin: 0;
-  background-color: #D84D3E;
+  background-color: #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#gameWrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+#gameArea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  height: 100vh;
-  position: relative;
 }
 
-/* Cover (800×400) */
-#cover {
+#titleBanner {
   width: 800px;
-  height: 400px;
-  margin-bottom: 8px;
+  height: 80px;
   image-rendering: pixelated;
+  margin-bottom: 8px;
 }
 
-/* Verstecke das Checkbox-Element */
-#startToggle {
-  display: none;
-}
-
-/* Overlay über dem Canvas */
-#startOverlay {
-  position: absolute;
-  top: calc(50% + 200px); /* Cover-Hälfte + Canvas-Hälfte */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: Arial, sans-serif;
-  font-size: 48px;
-  color: white;
-  text-shadow: 2px 2px 4px #000;
-  z-index: 10;
-  cursor: pointer;
-  user-select: none;
-}
-
-/* Canvas am Anfang unscharf */
-canvas.blurred {
-  filter: blur(6px);
-  transition: filter 0.3s ease;
-}
-
-/* Wenn die Checkbox angeklickt ist: Overlay ausblenden, Blur entfernen */
-#startToggle:checked ~ #startOverlay {
-  display: none;
-}
-#startToggle:checked ~ #gameCanvas {
-  filter: none;
-}
-
-/* Canvas-Rahmen und Pixel-Art */
 canvas {
   border: 2px solid white;
   image-rendering: pixelated;
+}
+
+#statusBar {
+  width: 800px;
+  height: 40px;
+  image-rendering: pixelated;
+  margin-top: 8px;
+}
+
+#sidebar {
+  width: 200px;
+  height: 400px;
+  background: #111;
+  padding: 8px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+  overflow-y: auto;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.legend-item img {
+  width: 32px;
+  height: 32px;
+  margin-right: 6px;
+  image-rendering: pixelated;
+}
+
+.legend-item span {
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
 }
