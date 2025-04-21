@@ -2,6 +2,27 @@ window.addEventListener('load', () => {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
+  // Hintergrundmusik
+const bgMusic = new Audio('audio/pixelträume.mp3');
+bgMusic.loop = true;        // Endlosschleife
+bgMusic.volume = 0.5;       // Lautstärke 0.0–1.0 nach Bedarf anpassen
+
+// Musik starten, sobald der Nutzer mit dem Dokument interagiert (Autoplay‑Richtlinien)
+function tryPlayMusic() {
+  bgMusic.play().catch(_ => {
+    // Gegebenenfalls muss der Nutzer einmal klicken, bevor Audio läuft
+    console.warn('Musik konnte nicht automatisch starten.');
+  });
+  // Entferne den Listener, damit wir’s nur einmal probieren
+  window.removeEventListener('click', tryPlayMusic);
+}
+
+// Versuche direkt zu spielen, und wenn das scheitert,
+// starte nach dem ersten Klick.
+bgMusic.play().catch(_ => {
+  window.addEventListener('click', tryPlayMusic);
+});
+
   // Pixel-Art scharf halten
 ctx.imageSmoothingEnabled = false;
 
