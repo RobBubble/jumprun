@@ -2,19 +2,18 @@ window.addEventListener('load', () => {
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
-  // Physik & Einstellungen
+  // === Grundeinstellungen ===
   const gravity = 0.5;
   const groundHeight = 50;
   const backgrounds = ['#222', '#2E8B57', '#8B4513', '#4B0082'];
   let currentBackground = 0;
 
-  // Lade Einzel-Sprite
+  // === Laden des einzelnen Cat-Sprites ===
   const catSprite = new Image();
-  catSprite.src = 'sprites/single_cat.png'; // Dein neues 32×32 Sprite
-
+  catSprite.src = 'sprites/single_cat.png'; // 32×32 Pixel
   const SPRITE_SIZE = 32;
 
-  // Spieler
+  // === Spieler ===
   const player = {
     x: 50,
     y: canvas.height - groundHeight - SPRITE_SIZE,
@@ -27,20 +26,23 @@ window.addEventListener('load', () => {
     onGround: true
   };
 
-  // Level-Elemente
+  // === Level-Daten ===
   let platforms = [], holes = [], enemies = [], collectibles = [], projectiles = [];
   let score = 0;
 
   function generateLevel() {
-    platforms = []; holes = []; enemies = []; collectibles = []; projectiles = [];
+    platforms = [];
+    holes = [];
+    enemies = [];
+    collectibles = [];
+    projectiles = [];
     const groundY = canvas.height - groundHeight - player.height;
 
-    // Plattformen & Löcher
+    // Plattformen und Löcher
     let lastX = player.x + player.width + 20;
     for (let i = 0; i < 3; i++) {
       const w = 80 + Math.random() * 40;
-      const gap = 50 + Math.random() * 80;
-      let x = lastX + gap;
+      let x = lastX + 50 + Math.random() * 80;
       if (x + w > canvas.width - 10) x = canvas.width - 10 - w;
       const y = groundY - (20 + Math.random() * 60);
       platforms.push({ x, y, width: w, height: 10 });
@@ -77,12 +79,14 @@ window.addEventListener('load', () => {
   function resetGame() {
     player.x = 50;
     player.y = canvas.height - groundHeight - SPRITE_SIZE;
-    player.dx = 0; player.dy = 0; player.onGround = true;
+    player.dx = 0;
+    player.dy = 0;
+    player.onGround = true;
     currentBackground = 0;
     generateLevel();
   }
 
-  // Steuerung
+  // === Steuerung ===
   const keys = {};
   window.addEventListener('keydown', e => {
     if (!keys[e.code]) {
@@ -107,10 +111,10 @@ window.addEventListener('load', () => {
     keys[e.code] = false;
   });
 
-  // Initialisiere Level
+  // Initiales Level
   generateLevel();
-  let lastTime = performance.now();
 
+  let lastTime = performance.now();
   function gameLoop(time) {
     const delta = time - lastTime;
     lastTime = time;
@@ -131,10 +135,12 @@ window.addEventListener('load', () => {
     // Plattform-Kollision
     if (player.dy > 0) {
       for (const p of platforms) {
-        if (oldY + player.height <= p.y &&
-            player.y + player.height >= p.y &&
-            player.x + player.width > p.x &&
-            player.x < p.x + p.width) {
+        if (
+          oldY + player.height <= p.y &&
+          player.y + player.height >= p.y &&
+          player.x + player.width > p.x &&
+          player.x < p.x + p.width
+        ) {
           player.y = p.y - player.height;
           player.dy = 0;
           player.onGround = true;
@@ -187,8 +193,11 @@ window.addEventListener('load', () => {
         e.x = canvas.width;
         e.y = gy;
       }
-      if (player.x < e.x + e.width && player.x + player.width > e.x &&
-          player.y < e.y + e.height && player.y + player.height > e.y) {
+      // Kollision Spieler-Gegner
+      if (
+        player.x < e.x + e.width && player.x + player.width > e.x &&
+        player.y < e.y + e.height && player.y + player.height > e.y
+      ) {
         resetGame();
       }
     }
@@ -196,8 +205,10 @@ window.addEventListener('load', () => {
     // --- Update Collectibles ---
     for (let i = collectibles.length - 1; i >= 0; i--) {
       const c = collectibles[i];
-      if (player.x < c.x + c.width && player.x + player.width > c.x &&
-          player.y < c.y + c.height && player.y + player.height > c.y) {
+      if (
+        player.x < c.x + c.width && player.x + player.width > c.x &&
+        player.y < c.y + c.height && player.y + player.height > c.y
+      ) {
         score++;
         collectibles.splice(i, 1);
       }
@@ -208,7 +219,7 @@ window.addEventListener('load', () => {
     ctx.fillStyle = backgrounds[currentBackground];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Boden / Löcher
+    // Boden mit Löchern
     ctx.fillStyle = '#444';
     let lastXdraw = 0;
     for (const h of holes) {
