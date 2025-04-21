@@ -80,7 +80,10 @@ window.addEventListener('load', () => {
       width: SPRITE_SIZE,
       height: SPRITE_SIZE,
       dx: -2,
-      dy: 0
+      dy: 0,
+      jumpPower: -10,
+      onGround: true,
+      jumpCooldown: 80
     });
 
     // Collectibles generieren (1-2) auf zufälligen Plattformen
@@ -111,8 +114,14 @@ window.addEventListener('load', () => {
 
   // Spiel zurücksetzen nur bei Fallen oder Gegnerkontakt
   function resetGame() {
-    player.x = startX; player.y = startY; player.dx = 0; player.dy = 0; player.onGround = true;
-    projectiles.length = 0; score = 0;
+    player.x = startX;
+    player.y = startY;
+    player.dx = 0;
+    player.dy = 0;
+    player.onGround = true;
+    currentBackground = 0; // reset background to first
+    projectiles.length = 0;
+    score = 0;
     generateLevel();
   }
 
@@ -157,52 +166,62 @@ window.addEventListener('load', () => {
     }
 
     // Fallen außerhalb des Bildschirms
-    if (player.y > canvas.height) { resetGame(); requestAnimationFrame(gameLoop); return; }
+    if (player.y > canvas.height) { resetGame(); return; }
 
     // Projektile updaten & Kollision mit Gegnern
     for (let i = projectiles.length - 1; i >= 0; i--) {
       const proj = projectiles[i];
       proj.dy += gravity; proj.x += proj.dx; proj.y += proj.dy;
-      if (proj.x > canvas.width || proj.y > canvas.height) { projectiles.splice(i, 1); continue; }
+      if (proj.x > canvas.width || proj.y > canvas.height) { projectiles.splice(i,1); continue; }
       for (let j = enemies.length - 1; j >= 0; j--) {
         const e = enemies[j];
         if (proj.x > e.x && proj.x < e.x + e.width && proj.y > e.y && proj.y < e.y + e.height) {
-          score++; enemies.splice(j, 1); projectiles.splice(i, 1); break;
+          score++; enemies.splice(j,1); projectiles.splice(i,1); break;
         }
       }
     }
 
     // Gegner aktualisieren & Kollision mit Spieler
     enemies.forEach(e => {
-      e.x += e.dx; e.dy = (e.dy||0) + gravity; e.y += e.dy;
-      if (e.y + e.height >= canvas.height - groundHeight) { e.y = canvas.height - groundHeight - e.height; e.dy = 0; }
-      if (e.x + e.width < 0) { e.x = canvas.width; e.y = canvas.height - groundHeight - e.height; }
-      if (player.x < e.x + e.width && player.x + player.width > e.x && player.y < e.y + e.height && player.y + player.height > e.y) {
-        resetGame(); requestAnimationFrame(gameLoop); return;
+      e.x += e.dx;
+      // Jump logic
+      if (e.onGround && e.jumpCooldown <= 0) {
+        e.dy = e.jumpPower;
+        e.onGround = false;
+        e.jumpCooldown = 80 + Math.random()*40;
       }
+      e.jumpCooldown--;
+      e.dy += gravity; e.y += e.dy;
+      // Plattformen
+      if (e.dy > 0) platforms.forEach(p => {
+        if (e.y + e.height >= p.y && e.x+e.width>p.x && e.x<p.x+p.width) {
+          e.y = p.y - e.height; e.dy=0; e.onGround=true;
+        }
+      });
+      // Boden
+      if (e.y+e.height>=canvas.height-groundHeight) { e.y=canvas.height-groundHeight-e.height; e.dy=0; e.onGround=true; }
+      // Respawn
+      if (e.x+e.width<0) { e.x=canvas.width; e.y=canvas.height-groundHeight-e.height; }
+      // Collision player
+      if (player.x<e.x+e.width&&player.x+player.width>e.x&&player.y<e.y+e.height&&player.y+player.height>e.y) { resetGame(); return; }
     });
 
     // Collectibles Kollision und Score-Erhöhung
     collectibles = collectibles.filter(item => {
-      if (player.x < item.x + item.width && player.x + player.width > item.x && player.y < item.y + item.height && player.y + player.height > item.y) {
-        score++; return false; }
+      if (player.x<item.x+item.width&&player.x+player.width>item.x&&player.y<item.y+item.height&&player.y+player.height>item.y) { score++; return false; }
       return true;
     });
 
     // Zeichnen
-    ctx.fillStyle = backgrounds[currentBackground]; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#444'; let last = 0;
-    holes.forEach(h => { ctx.fillRect(last, canvas.height - groundHeight, h.x - last, groundHeight); last = h.x + h.width; });
-    ctx.fillRect(last, canvas.height - groundHeight, canvas.width - last, groundHeight);
-    ctx.fillStyle = '#888'; platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
-    // Spieler mit Sprite zeichnen
-    ctx.drawImage(catSprite, 0, 0, SPRITE_SIZE, SPRITE_SIZE, player.x, player.y, SPRITE_SIZE, SPRITE_SIZE);
-    ctx.fillStyle = 'yellow'; projectiles.forEach(pr => { ctx.beginPath(); ctx.arc(pr.x, pr.y, pr.radius, 0, Math.PI*2); ctx.fill(); });
-    ctx.fillStyle = 'green'; enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
-    collectibles.forEach(c => { ctx.fillStyle = c.color; ctx.fillRect(c.x, c.y, c.width, c.height); });
-    ctx.fillStyle = 'white'; ctx.font = '16px Arial'; ctx.fillText('Score: '+score, 10, 20);
+    ctx.fillStyle=backgrounds[currentBackground]; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#444'; let last=0; holes.forEach(h=>{ctx.fillRect(last,canvas.height-groundHeight,h.x-last,groundHeight); last=h.x+h.width;}); ctx.fillRect(last,canvas.height-groundHeight,canvas.width-last,groundHeight);
+    ctx.fillStyle='#888'; platforms.forEach(p=>ctx.fillRect(p.x,p.y,p.width,p.height));
+    ctx.drawImage(catSprite,0,0,SPRITE_SIZE,SPRITE_SIZE,player.x,player.y,SPRITE_SIZE,SPRITE_SIZE);
+    ctx.fillStyle='yellow'; projectiles.forEach(pr=>{ctx.beginPath();ctx.arc(pr.x,pr.y,pr.radius,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle='green'; enemies.forEach(e=>ctx.fillRect(e.x,e.y,e.width,e.height));
+    collectibles.forEach(c=>{ctx.fillStyle=c.color;ctx.fillRect(c.x,c.y,c.width,c.height);});
+    ctx.fillStyle='white'; ctx.font='16px Arial'; ctx.fillText('Score:'+score,10,20);
     requestAnimationFrame(gameLoop);
   }
-
   gameLoop();
 });
