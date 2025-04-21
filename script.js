@@ -341,21 +341,14 @@ if (playerImage.complete) {
   );
 }
 
-// Projektile als Sprite zeichnen
-projectiles.forEach(proj => {
-   if (projectileImage.complete) {
-     // proj.x/proj.y sind Mittelpunkte – deshalb um proj.radius verschieben
-     ctx.drawImage(
-       projectileImage,
-       proj.x - proj.radius,
-       proj.y - proj.radius,
-       proj.radius * 2,
-       proj.radius * 2
-     );
-   }
- });
+ctx.drawImage(
+  projectileImage,
+  proj.x - 15,
+  proj.y - 15,
+  30,    // Breite
+  30     // Höhe
+);
   
-
   // Gegner mit Sprite zeichnen (statt grüner Würfel)
 enemies.forEach(e => {
   if (enemyImage.complete) {
