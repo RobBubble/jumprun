@@ -187,7 +187,7 @@ window.addEventListener('load', () => {
       player.onGround = true;
     }
     if (player.y > canvas.height) {
-      resetGame();
+      resetGame(); return;
     }
 
     // Projektile update & Kollision mit Gegnern
@@ -206,6 +206,8 @@ window.addEventListener('load', () => {
           proj.x > e.x && proj.x < e.x + e.width &&
           proj.y > e.y && proj.y < e.y + e.height
         ) {
+          // Erhöhe Score für getroffenen Gegner
+          score++;
           enemies.splice(j, 1);
           projectiles.splice(i, 1);
           break;
@@ -254,12 +256,10 @@ window.addEventListener('load', () => {
         player.x + player.width > e.x &&
         player.y < e.y + e.height &&
         player.y + player.height > e.y
-      ) {
-        resetGame();
-      }
+      ) { resetGame(); }
     });
 
-    // Collectibles Kollision
+    // Collectibles Kollision und Score-Erhöhung
     collectibles = collectibles.filter(item => {
       if (
         player.x < item.x + item.width &&
@@ -274,7 +274,6 @@ window.addEventListener('load', () => {
     });
 
     // Zeichnen
-    // Hintergrund
     ctx.fillStyle = backgrounds[currentBackground];
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -309,7 +308,7 @@ window.addEventListener('load', () => {
       ctx.fillRect(e.x, e.y, e.width, e.height);
     });
 
-    // Collectibles zeichnen
+    // Collectibles
     collectibles.forEach(item => {
       ctx.fillStyle = item.color;
       ctx.fillRect(item.x, item.y, item.width, item.height);
