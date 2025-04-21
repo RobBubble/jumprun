@@ -4,26 +4,39 @@ body {
   margin: 0;
   background-color: #D84D3E;
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+}
+
+/* Haupt-Container in zwei Spalten */
+#mainContainer {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 16px;
+}
+
+/* Linke Spalte: Spiel */
+#gameContainer {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  height: 100vh;
-  position: relative;
 }
 
 /* Cover (800×400) */
 #cover {
   width: 800px;
   height: 400px;
-  display: block;
   margin-bottom: 8px;
   image-rendering: pixelated;
 }
 
-/* Container um Canvas und Overlay */
+/* Canvas + Overlay Wrapper */
 #canvasContainer {
   position: relative;
-  margin-bottom: 8px;
+  width: 800px;
+  height: 400px;
 }
 
 /* Canvas initial unscharf */
@@ -32,7 +45,7 @@ body {
   transition: filter 0.3s ease;
 }
 
-/* Canvas-Rahmen und Pixel-Art */
+/* Canvas-Basis */
 #gameCanvas {
   border: 2px solid white;
   image-rendering: pixelated;
@@ -42,10 +55,7 @@ body {
 /* Overlay zentriert über dem Canvas */
 #startOverlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0; /* top:0; right:0; bottom:0; left:0; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -58,10 +68,18 @@ body {
   z-index: 10;
 }
 
-/* Checkbox-Hack: bei Klick Blur entfernen und Overlay ausblenden */
+/* CSS-Checkbox-Hack: bei Klick Overlay ausblenden & Blur entfernen */
 #startToggle:checked ~ #gameCanvas {
   filter: none;
 }
 #startToggle:checked ~ #startOverlay {
   display: none;
+}
+
+/* Rechte Spalte: Legende */
+#legend {
+  display: block;
+  width: 200px;       /* passe bei Bedarf an */
+  height: auto;
+  image-rendering: pixelated;
 }
