@@ -67,22 +67,19 @@ window.addEventListener('load', () => {
       lastX = x + width;
     }
 
-    // Gegner generieren (1-2)
-    const enemyCount = Math.floor(Math.random() * 2) + 1;
-    for (let i = 0; i < enemyCount; i++) {
-      const ex = canvas.width - Math.random() * (canvas.width / 2);
-      enemies.push({
-        x: ex,
-        y: startY,
-        width: 32,
-        height: 32,
-        dx: -2,
-        dy: 0,
-        jumpPower: -10,
-        onGround: true,
-        jumpCooldown: 0
-      });
-    }
+    // Ein Gegner pro Szene
+    const ex = canvas.width - Math.random() * (canvas.width / 2);
+    enemies.push({
+      x: ex,
+      y: startY,
+      width: 32,
+      height: 32,
+      dx: -2,
+      dy: 0,
+      jumpPower: -10,
+      onGround: true,
+      jumpCooldown: 0
+    });
 
     // Collectibles generieren (1-2) auf zufälligen Plattformen
     const itemCount = Math.floor(Math.random() * 2) + 1;
@@ -190,7 +187,8 @@ window.addEventListener('load', () => {
       player.dy = 0;
       player.onGround = true;
     }
-    // Fall außerhalb des Bildschirms
+
+    // Fallen außerhalb des Bildschirms
     if (player.y > canvas.height) {
       resetGame();
       return;
@@ -222,7 +220,7 @@ window.addEventListener('load', () => {
 
     // Gegner aktualisieren & Kollision mit Spieler
     for (const e of enemies) {
-      // Bewegung
+      // horizontale Bewegung
       e.x += e.dx;
       // Springen
       if (e.onGround && e.jumpCooldown <= 0) {
@@ -262,7 +260,7 @@ window.addEventListener('load', () => {
         e.x = canvas.width + Math.random() * 50;
         e.y = startY;
       }
-      // Spieler-Kollision -> Reset und Abbruch
+      // Spieler-Kollision -> Reset & Abbruch
       if (
         player.x < e.x + e.width &&
         player.x + player.width > e.x &&
@@ -274,7 +272,7 @@ window.addEventListener('load', () => {
       }
     }
 
-    // Collectibles
+    // Collectibles Kollision und Score-Erhöhung
     collectibles = collectibles.filter(item => {
       if (
         player.x < item.x + item.width &&
