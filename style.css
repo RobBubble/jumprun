@@ -15,46 +15,53 @@ body {
 #cover {
   width: 800px;
   height: 400px;
+  display: block;
   margin-bottom: 8px;
   image-rendering: pixelated;
 }
 
-/* Verstecke das Checkbox-Element */
-#startToggle {
-  display: none;
+/* Container um Canvas und Overlay */
+#canvasContainer {
+  position: relative;
+  margin-bottom: 8px;
 }
 
-/* Overlay über dem Canvas */
-#startOverlay {
-  position: absolute;
-  top: calc(50% + 200px); /* Cover-Hälfte + Canvas-Hälfte */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: Arial, sans-serif;
-  font-size: 48px;
-  color: white;
-  text-shadow: 2px 2px 4px #000;
-  z-index: 10;
-  cursor: pointer;
-  user-select: none;
-}
-
-/* Canvas am Anfang unscharf */
-canvas.blurred {
+/* Canvas initial unscharf */
+#gameCanvas.blurred {
   filter: blur(6px);
   transition: filter 0.3s ease;
 }
 
-/* Wenn die Checkbox angeklickt ist: Overlay ausblenden, Blur entfernen */
-#startToggle:checked ~ #startOverlay {
-  display: none;
+/* Canvas-Rahmen und Pixel-Art */
+#gameCanvas {
+  border: 2px solid white;
+  image-rendering: pixelated;
+  display: block;
 }
+
+/* Overlay zentriert über dem Canvas */
+#startOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  font-size: 48px;
+  color: white;
+  text-shadow: 2px 2px 4px #000;
+  cursor: pointer;
+  user-select: none;
+  z-index: 10;
+}
+
+/* Checkbox-Hack: bei Klick Blur entfernen und Overlay ausblenden */
 #startToggle:checked ~ #gameCanvas {
   filter: none;
 }
-
-/* Canvas-Rahmen und Pixel-Art */
-canvas {
-  border: 2px solid white;
-  image-rendering: pixelated;
+#startToggle:checked ~ #startOverlay {
+  display: none;
 }
