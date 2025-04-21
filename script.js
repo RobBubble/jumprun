@@ -1,6 +1,18 @@
 window.addEventListener('load', () => {
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.getElementById('gameCanvas');
+  const overlay = document.getElementById('startOverlay');
+
+  let gameStarted = false;
+
+  // Klick-Handler, um das Spiel zu starten
+  overlay.addEventListener('click', () => {
+    gameStarted = true;
+    overlay.style.display = 'none';
+    canvas.classList.remove('blurred');
+    // Jetzt darf die Loop starten
+    generateLevel();
+    gameLoop();
+  });
 
   // Hintergrundmusik
 const bgMusic = new Audio('audio/Pixelträume.mp3');
@@ -405,5 +417,4 @@ collectibles.forEach(item => {
     requestAnimationFrame(gameLoop);
   }
 
-  gameLoop();
 });
